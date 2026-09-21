@@ -30,6 +30,16 @@ reached through the `homebox` MCP server. bbhome is NOT involved.
    `purchasePrice` (number), `purchaseDate` (YYYY-MM-DD), `purchaseFrom`,
    `insured: true` for anything over ~$500, `notes` (anything else — warranty
    length, extended warranty, installer), `warrantyExpires` if known.
+   **`notes` has a hard, undocumented 1000-character cap** — Homebox rejects
+   anything longer with an opaque 500 error (no length in the message), so
+   don't find out the limit by trial and error. Count before sending; if the
+   full picture won't fit, prioritize ruthlessly rather than truncating
+   mid-thought: keep dates, IDs/instrument numbers, dollar amounts, and
+   anything flagged as a discrepancy or follow-up; drop restating what's
+   already in `description`/other fields; abbreviate freely (org names,
+   "recorded"→"rec.", "instrument"→"instr.", etc.) once the important facts
+   are locked in. If it still won't fit, say so and ask Bruce what to cut
+   rather than silently dropping the tail end.
 6. **Attach the photo(s).**
    - **Claude Code, with a real file on disk** (read it, then base64 it —
      never do this for an image merely pasted into a Claude Code chat; it
