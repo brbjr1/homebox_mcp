@@ -30,14 +30,21 @@ reached through the `homebox` MCP server. bbhome is NOT involved.
    `purchasePrice` (number), `purchaseDate` (YYYY-MM-DD), `purchaseFrom`,
    `insured: true` for anything over ~$500, `notes` (anything else — warranty
    length, extended warranty, installer), `warrantyExpires` if known.
-6. **Attach the photo(s).** If the client gives you the file bytes or a path
-   (Claude Code: read the file and base64 it), call `items_attachment_add` with
-   `type: "photo"`, `primary: true` for the best overall shot; receipts as
-   `type: "receipt"`; manuals as `type: "manual"`. **In the claude.ai mobile/web
-   app you can SEE an image but cannot read its bytes** — in that case do not
-   pretend to attach it: finish steps 4–5, then give Bruce the direct link
+6. **Attach the photo(s) — Claude Code only.** `items_attachment_add` needs the
+   actual file bytes, base64-encoded. **Only Claude Code can do this**, and
+   only for a file that exists on disk (read it, then base64 it) — never
+   attempt this for an image pasted directly into a Claude Code chat either;
+   it must be a real file path. Call it with `type: "photo"`, `primary: true`
+   for the best overall shot; receipts as `type: "receipt"`; manuals as
+   `type: "manual"`.
+   **In claude.ai web, the mobile app, AND the Desktop app, a photo shared in
+   chat gives you vision (you can see and describe it) but never the raw
+   bytes** — there is no file path and no way to construct valid base64 for
+   it. In those clients, do not call `items_attachment_add` at all, not even
+   as an attempt — it has no chance of succeeding and will just hang or
+   produce garbage. Instead finish steps 4–5, then give Bruce the direct link
    `https://inventory.brbjr.com/item/<id>` and tell him to tap "Attach" there
-   to add the photo/receipt.
+   to add the photo/receipt himself.
 7. **Confirm** in one compact block: name, location, category, serial, price,
    date, insured flag, what was attached, and the item link. Fix anything he
    corrects with `items_update`.
