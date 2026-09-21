@@ -11,6 +11,7 @@ import { activeTools } from "../tools/index.js";
 import { HomeboxApiError, isBinaryResponse } from "../homebox/client.js";
 import { logActivity } from "../logger.js";
 import { isToolContentResult } from "../tools/types.js";
+import { registerUploadRoutes } from "../upload/routes.js";
 
 // Keep the few Express-facing annotations structural. Express is only used
 // indirectly through createMcpExpressApp(), and importing its DefinitelyTyped
@@ -181,7 +182,11 @@ export async function runHttpServer(): Promise<import("node:http").Server> {
 
   const app = createHttpApp(httpHost, config.mcp.httpBodyLimitBytes);
 
-  app.use((req: HttpRequest, res: HttpResponse, next: Next) => {
+  // Scoped to httpPath specifically (not a blanket app.use) because the
+  // /upload page below is deliberately reachable without this bearer
+  // token -- it's a browser-facing page for end users, authenticated
+  // instead by the signed, per-item, time-limited token in its own URL.
+  app.use(httpPath, (req: HttpRequest, res: HttpResponse, next: Next) => {
     if (!authToken) {
       next();
       return;
@@ -198,6 +203,8 @@ export async function runHttpServer(): Promise<import("node:http").Server> {
     }
     next();
   });
+
+  registerUploadRoutes(app);
 
   // Stateful: one McpServer + transport per client session, keyed by the
   // Mcp-Session-Id the transport generates on initialize and the client

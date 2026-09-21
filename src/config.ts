@@ -82,6 +82,29 @@ export const config = {
     // opaque 413 instead of a clean tool error.
     httpBodyLimitBytes: parsePositiveInt("MCP_HTTP_BODY_LIMIT_BYTES", 10 * 1024 * 1024),
   },
+  // The /upload page: a browser-facing, no-login page that lets someone
+  // attach several photos to one item in a single submit, for clients that
+  // hand the model vision-only access to a chat photo (no raw bytes) --
+  // claude.ai web/mobile/desktop, unlike Claude Code. items_upload_link
+  // mints a signed, time-limited link to this page; nothing here trusts an
+  // Authorization header, so the signature is the only thing standing
+  // between this page and letting anyone with the link upload to that item.
+  upload: {
+    // HMAC-SHA256 key for signing/verifying upload-link tokens. Deliberately
+    // separate from MCP_AUTH_TOKEN (a bearer secret meant to sit in an
+    // Authorization header) since this one gets embedded in a URL that's
+    // handed to end users and pasted into chat -- keeping them distinct
+    // means a leaked upload link can't be replayed against the MCP endpoint
+    // itself, and rotating one doesn't force rotating the other.
+    linkSecret: process.env.UPLOAD_LINK_SECRET ?? "",
+    linkTtlSeconds: parsePositiveInt("UPLOAD_LINK_TTL_SECONDS", 3600),
+    path: process.env.UPLOAD_PATH ?? "/upload",
+    // Multipart bodies are raw bytes (no base64 inflation), but a batch of
+    // several full-resolution phone photos in one submit still adds up
+    // fast -- default generously above the /mcp JSON limit rather than
+    // forcing multiple round trips.
+    bodyLimitBytes: parsePositiveInt("UPLOAD_BODY_LIMIT_BYTES", 50 * 1024 * 1024),
+  },
 };
 
 export function assertHomeboxConfigured(): void {

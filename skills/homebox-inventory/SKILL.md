@@ -30,24 +30,25 @@ reached through the `homebox` MCP server. bbhome is NOT involved.
    `purchasePrice` (number), `purchaseDate` (YYYY-MM-DD), `purchaseFrom`,
    `insured: true` for anything over ~$500, `notes` (anything else — warranty
    length, extended warranty, installer), `warrantyExpires` if known.
-6. **Attach the photo(s) — Claude Code only.** `items_attachment_add` needs the
-   actual file bytes, base64-encoded. **Only Claude Code can do this**, and
-   only for a file that exists on disk (read it, then base64 it) — never
-   attempt this for an image pasted directly into a Claude Code chat either;
-   it must be a real file path. Call it with `type: "photo"`, `primary: true`
-   for the best overall shot; receipts as `type: "receipt"`; manuals as
-   `type: "manual"`.
-   **In claude.ai web, the mobile app, AND the Desktop app, a photo shared in
-   chat gives you vision (you can see and describe it) but never the raw
-   bytes** — there is no file path and no way to construct valid base64 for
-   it. In those clients, do not call `items_attachment_add` at all, not even
-   as an attempt — it has no chance of succeeding and will just hang or
-   produce garbage. Instead finish steps 4–5, then give Bruce the direct link
-   `https://inventory.brbjr.com/item/<id>` and tell him to tap "Attach" there
-   to add the photo/receipt himself.
+6. **Attach the photo(s).**
+   - **Claude Code, with a real file on disk** (read it, then base64 it —
+     never do this for an image merely pasted into a Claude Code chat; it
+     must be an actual file path): call `items_attachment_add` with
+     `type: "photo"`, `primary: true` for the best overall shot; receipts as
+     `type: "receipt"`; manuals as `type: "manual"`.
+   - **Every other client — claude.ai web, the mobile app, the Desktop app,
+     Cowork** — you were only ever given *vision* over the chat photo, never
+     its raw bytes, so there is nothing to upload and no file path to read.
+     Do **not** call `items_attachment_add` here; it cannot succeed and will
+     just hang or produce garbage. Instead call `items_upload_link` with the
+     item's id and give Bruce that URL: tell him to open it and pick/upload
+     the photo(s) himself, right from his phone or browser — it accepts
+     several files in one go and needs no login (the link itself is
+     time-limited and scoped to this one item).
 7. **Confirm** in one compact block: name, location, category, serial, price,
-   date, insured flag, what was attached, and the item link. Fix anything he
-   corrects with `items_update`.
+   date, insured flag, what was attached (or the upload link, if you couldn't
+   attach it yourself), and the item link. Fix anything he corrects with
+   `items_update`.
 
 ## Updating an existing item
 

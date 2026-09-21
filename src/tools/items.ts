@@ -5,6 +5,8 @@ import { assertEntityKind, entityUpdateBodyFromCurrent, fetchEntityOfKind, type 
 import { buildSearchTerms, findRelevantTags, mergeEntitySearchResults } from "../homebox/search.js";
 import { deepSearchItems } from "../homebox/deepSearch.js";
 import { defineTool, safeId, type ToolContentResult, type ToolDef } from "./types.js";
+import { config } from "../config.js";
+import { issueUploadToken } from "../upload/token.js";
 
 const id = safeId.describe("Homebox entity (item) UUID");
 
@@ -361,6 +363,25 @@ export const itemTools: ToolDef<any>[] = [
           ...(primary !== undefined ? { primary: String(primary) } : {}),
         },
       }),
+  }),
+
+  defineTool({
+    name: "items_upload_link",
+    description:
+      "Get a one-time web link where a person can pick and upload several photos/files to this item themselves, from their own browser. " +
+      "Use this instead of items_attachment_add whenever you were only given the photo through chat (claude.ai web, mobile, or the desktop app) " +
+      "and therefore don't have its actual bytes -- only Claude Code, given a real file path, ever has bytes to upload directly. " +
+      "The link expires and is scoped to this one item only.",
+    write: false,
+    shape: { id },
+    handler: async ({ id }) => {
+      const { exp, token } = issueUploadToken(id);
+      const url = new URL(config.upload.path, config.homebox.webUrl);
+      url.searchParams.set("item", id);
+      url.searchParams.set("exp", String(exp));
+      url.searchParams.set("token", token);
+      return { url: url.toString(), expiresAt: new Date(exp * 1000).toISOString() };
+    },
   }),
 
   defineTool({
